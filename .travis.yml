@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t soolaimon/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run soolaimon/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t soolaimon/multi-client ./client
+  - docker build -t soolaimon/multi-nginx ./nginx
+  - docker build -t soolaimon/multi-server ./server
+  - docker build -t soolaimon/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push soolaimon/multi-client
+  - docker push soolaimon/multi-nginx
+  - docker push soolaimon/multi-server
+  - docker push soolaimon/multi-worker
